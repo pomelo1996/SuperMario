@@ -1,0 +1,161 @@
+<html>
+<head>
+	<title>别踩白块儿</title>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE-edge,chrome=1" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" /> 
+<style type="text/css">
+	.title{
+		width: 100%;
+		height: 12%;
+		margin: 0 auto;
+		text-align: center;
+	}
+	p,span{
+		font-size: 15px;
+	}
+	#game{
+		margin: 0 auto;
+		padding: 0;
+		width: 280px;
+		height: 400px;
+		border: 1px solid black;
+		position: relative;
+		overflow: hidden;
+	}	
+	#container{
+		margin: 0 auto;
+		position: relative;
+		top: -100px;
+		width: 100%;
+		height: 100%;
+	}
+	.line{
+		margin: 0;
+		width: 100%;
+		height: 25%;
+	}
+	.block{
+		float: left;
+		width: 25%;
+		height: 100%;
+	}
+	.black_block{
+		float: left;
+		width: 25%;
+		height: 100%;
+		background-color: black;
+	}
+</style>
+</head>
+<body> 
+	<div class="title">
+    	<p>别踩白块儿(点击黑块儿开始)</p>
+    	<span id="get">得分：</span>
+    	<span id="score"> 0 </span>
+    </div>
+    <div id="game">
+		<div id="container"></div>
+	</div>
+	<script type="text/javascript">
+		var timer = null;
+		var state = 0; // 0初始化 1进行中 2暂停 3失败
+		var speed = 0;
+		function $(id){
+			return document.getElementById(id);
+		}
+		function createDiv(className){
+			var div = document.createElement('div');
+			div.className = className;
+			return div;
+		}
+		function createLine(){
+			var con = $('container');
+			var classes = createArray();
+			var line = createDiv('line');
+			for(var i = 0; i < 4; i++ ){
+				line.appendChild(createDiv(classes[i]));
+			}
+			if(con.firstChild == null){
+				con.appendChild(line);
+			}
+			else{
+				con.insertBefore(line,con.firstChild);
+			}
+		}
+		function deleteLine(){
+			var con = $('container');
+			if(con.childNodes.length == 6){
+				con.removeChild(con.lastChild);
+			}
+		}
+		function init(){
+			for(var i = 0; i < 4; i++ ){
+				createLine();
+			}
+			$('game').onclick = function(obj){
+				if(state == 3){return;}
+				if(obj.target.className.indexOf('black')== -1){
+					fail();
+				}
+				else{
+					obj.target.className = 'block';
+					obj.target.parentNode.pass = 1;
+					count();
+				}
+			}
+		}
+		function createArray(){
+			var arr = ['block','block','block','block'];
+			var i = Math.floor(Math.random()*4);
+			arr[i] = ['black_block'];
+			return arr;
+		}
+		function move(){
+			var con = $('container');
+			var top = parseInt(window.getComputedStyle(con,null)['top']);
+			if(speed + top > 0){
+				top = 0;
+			}else{
+				top += speed;
+			}
+			con.style.top = top + 'px';
+			if(top == 0){
+				createLine();
+				con.style.top = '-100px';
+				deleteLine();
+			}
+			else if(top == -100 + speed){
+				var lines = con.childNodes;
+				if(lines.length == 5 && (lines[lines.length-1].pass!=1)){
+					fail();
+				}
+			}
+		}
+		function fail(){
+			clearInterval(timer);
+			state = 3;
+			alert("你输咯！你的分数为："+ $('score').innerHTML +  '\n' +"请重新开始!");
+			window.location.reload(true);
+		}
+		function start(){
+			timer = window.setInterval('move()',50);
+			init();
+		}
+		function count(){
+			var newScore = parseInt($('score').innerHTML) + 1;
+			$('score').innerHTML = newScore;
+			if(newScore % 10 == 0){
+				speedUp();			
+			}
+			if(speed == 0){
+				speed = 4;
+			}
+		}
+		function speedUp(){
+			speed += 2;
+		}
+		start();
+	</script>
+</body>
+</html>
